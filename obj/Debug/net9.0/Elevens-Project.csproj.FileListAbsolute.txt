@@ -1,0 +1,15 @@
+/Users/nuria/Desktop/Elevens-Project/bin/Debug/net9.0/Elevens-Project
+/Users/nuria/Desktop/Elevens-Project/bin/Debug/net9.0/Elevens-Project.deps.json
+/Users/nuria/Desktop/Elevens-Project/bin/Debug/net9.0/Elevens-Project.runtimeconfig.json
+/Users/nuria/Desktop/Elevens-Project/bin/Debug/net9.0/Elevens-Project.dll
+/Users/nuria/Desktop/Elevens-Project/bin/Debug/net9.0/Elevens-Project.pdb
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.GeneratedMSBuildEditorConfig.editorconfig
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.AssemblyInfoInputs.cache
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.AssemblyInfo.cs
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.csproj.CoreCompileInputs.cache
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.sourcelink.json
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.dll
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/refint/Elevens-Project.dll
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.pdb
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/Elevens-Project.genruntimeconfig.cache
+/Users/nuria/Desktop/Elevens-Project/obj/Debug/net9.0/ref/Elevens-Project.dll

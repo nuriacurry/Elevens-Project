@@ -2,38 +2,38 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// Interactive Elevens Solitaire Game
-/// Complete implementation with user interface and gameplay loop
+/// Complete Elevens Solitaire Game - Final Submission
+/// Advanced features: Save/Load, Undo, Hints, Statistics, Enhanced UI
 /// </summary>
 class Program
 {
+    static GameManager gameManager = new GameManager();
+    
     static void Main(string[] args)
     {
-        Console.WriteLine("🎴 WELCOME TO ELEVENS SOLITAIRE! 🎴");
-        Console.WriteLine("===================================");
+        ShowWelcomeScreen();
         
         ElevensGame game = new ElevensGame();
         bool playAgain = true;
+        
+        // Try to load previous session
+        gameManager.LoadGameFromFile();
         
         while (playAgain)
         {
             // Start new game
             game.StartNewGame();
+            gameManager.SaveGameState(game);
             
-            // Main game loop
+            // Main game loop with enhanced features
             while (!game.IsGameOver())
             {
                 Console.Clear();
+                ShowGameHeader();
                 game.DisplayBoard();
+                ShowAdvancedCommands();
                 
-                Console.WriteLine("\n🎮 GAME COMMANDS:");
-                Console.WriteLine("   0-8: Select/deselect card at position");
-                Console.WriteLine("   P: Process move with selected cards");
-                Console.WriteLine("   C: Clear selection");
-                Console.WriteLine("   H: Show detailed help");
-                Console.WriteLine("   Q: Quit current game");
-                Console.Write("\nEnter command: ");
-                
+                Console.Write("\n🎮 Enter command: ");
                 string input = Console.ReadLine()?.ToUpper().Trim();
                 
                 if (string.IsNullOrEmpty(input))
@@ -47,9 +47,9 @@ class Program
                     case "5": case "6": case "7": case "8":
                         if (int.TryParse(input, out int position))
                         {
+                            gameManager.SaveGameState(game); // Save state before move
                             game.ToggleCardSelection(position);
-                            Console.WriteLine("Press any key to continue...");
-                            Console.ReadKey();
+                            PauseForInput();
                         }
                         break;
                         
@@ -57,23 +57,46 @@ class Program
                         bool validMove = game.ProcessMove();
                         if (validMove)
                         {
-                            Console.WriteLine("✨ Cards replaced! Press any key to continue...");
+                            gameManager.SaveGameState(game);
+                            Console.WriteLine("✨ Cards replaced! Excellent move!");
                         }
                         else
                         {
-                            Console.WriteLine("Press any key to try again...");
+                            Console.WriteLine("💭 Try a different combination...");
                         }
-                        Console.ReadKey();
+                        PauseForInput();
                         break;
                         
                     case "C":
                         game.ClearSelection();
-                        Console.WriteLine("Press any key to continue...");
-                        Console.ReadKey();
+                        PauseForInput();
                         break;
                         
                     case "H":
                         ShowDetailedHelp();
+                        break;
+                        
+                    case "HINT":
+                        gameManager.ProvideHint(game.GetBoard());
+                        PauseForInput();
+                        break;
+                        
+                    case "U":
+                    case "UNDO":
+                        gameManager.UndoLastMove(game);
+                        PauseForInput();
+                        break;
+                        
+                    case "S":
+                    case "SAVE":
+                        gameManager.SaveGameToFile(game);
+                        PauseForInput();
+                        break;
+                        
+                    case "STATS":
+                        Console.Clear();
+                        Console.WriteLine(gameManager.GetDetailedStats());
+                        PauseForInput();
                         break;
                         
                     case "Q":
@@ -81,92 +104,213 @@ class Program
                         goto GameEnd;
                         
                     default:
-                        Console.WriteLine("❌ Invalid command! Press any key to continue...");
-                        Console.ReadKey();
+                        Console.WriteLine("❌ Invalid command! Type 'H' for help");
+                        PauseForInput();
                         break;
                 }
             }
             
             GameEnd:
-            // Game over - show results
-            Console.Clear();
-            if (game.HasWon())
-            {
-                Console.WriteLine("🎉 CONGRATULATIONS! YOU WON! 🎉");
-                Console.WriteLine("===============================");
-                Console.WriteLine("You successfully removed all cards!");
-                
-                // Victory animation
-                for (int i = 0; i < 3; i++)
-                {
-                    Console.Write("🎊 ");
-                    System.Threading.Thread.Sleep(500);
-                }
-                Console.WriteLine();
-            }
-            else
-            {
-                Console.WriteLine("😔 GAME OVER - NO MORE MOVES");
-                Console.WriteLine("============================");
-                Console.WriteLine("Better luck next time!");
-            }
+            // Enhanced game over sequence
+            ShowGameResults(game);
+            gameManager.UpdateStats(game.HasWon());
             
-            // Show statistics
-            Console.WriteLine($"\n{game.GetGameStats()}");
-            
-            // Ask to play again
-            Console.WriteLine("\n🔄 Would you like to play again? (Y/N)");
-            string playAgainInput = Console.ReadLine()?.ToUpper().Trim();
-            playAgain = playAgainInput == "Y" || playAgainInput == "YES";
+            // Ask to play again with enhanced options
+            playAgain = AskPlayAgain();
         }
         
-        Console.WriteLine("\n👋 Thanks for playing Elevens Solitaire!");
+        ShowFarewellScreen();
+    }
+    
+    static void ShowWelcomeScreen()
+    {
+        Console.Clear();
+        Console.WriteLine("╔════════════════════════════════════════╗");
+        Console.WriteLine("║        🎴 ELEVENS SOLITAIRE 🎴         ║");
+        Console.WriteLine("║            FINAL VERSION               ║");
+        Console.WriteLine("╠════════════════════════════════════════╣");
+        Console.WriteLine("║  Advanced Features:                    ║");
+        Console.WriteLine("║  • Save/Load Games                     ║");
+        Console.WriteLine("║  • Undo Moves                         ║");
+        Console.WriteLine("║  • Intelligent Hints                  ║");
+        Console.WriteLine("║  • Detailed Statistics                 ║");
+        Console.WriteLine("║  • Enhanced Visual Interface           ║");
+        Console.WriteLine("╚════════════════════════════════════════╝");
+        Console.WriteLine("\nPress any key to begin your solitaire journey...");
+        Console.ReadKey();
+    }
+    
+    static void ShowGameHeader()
+    {
+        Console.WriteLine("🎴═══════════════════════════════════════════════════════════🎴");
+        Console.WriteLine("                    ELEVENS SOLITAIRE - FINAL VERSION");
+        Console.WriteLine("🎴═══════════════════════════════════════════════════════════🎴");
+    }
+    
+    static void ShowAdvancedCommands()
+    {
+        Console.WriteLine("\n🎮 GAME COMMANDS:");
+        Console.WriteLine("┌─────────────────────────────────────────────────────────────┐");
+        Console.WriteLine("│ 0-8: Select/deselect card    │ P: Process move             │");
+        Console.WriteLine("│ C: Clear selection           │ H: Help & rules             │");
+        Console.WriteLine("│ HINT: Get intelligent hint   │ U/UNDO: Undo last move     │");
+        Console.WriteLine("│ S/SAVE: Save game            │ STATS: View statistics      │");
+        Console.WriteLine("│ Q: Quit game                 │                             │");
+        Console.WriteLine("└─────────────────────────────────────────────────────────────┘");
+    }
+    
+    static void ShowGameResults(ElevensGame game)
+    {
+        Console.Clear();
+        
+        if (game.HasWon())
+        {
+            Console.WriteLine("🎉╔═══════════════════════════════════════╗🎉");
+            Console.WriteLine("  ║         VICTORY ACHIEVED!             ║  ");
+            Console.WriteLine("🎊║      CONGRATULATIONS CHAMPION!       ║🎊");
+            Console.WriteLine("  ╚═══════════════════════════════════════╝  ");
+            Console.WriteLine();
+            
+            // Victory animation
+            string[] celebrations = { "🎊", "🎉", "✨", "🏆", "⭐" };
+            Console.Write("Celebration: ");
+            for (int i = 0; i < 10; i++)
+            {
+                Console.Write(celebrations[i % celebrations.Length] + " ");
+                System.Threading.Thread.Sleep(200);
+            }
+            Console.WriteLine("\n");
+            
+            Console.WriteLine("🏆 You successfully removed all 52 cards!");
+            Console.WriteLine("🧠 Your strategic thinking paid off!");
+            Console.WriteLine("💪 Elevens mastery achieved!");
+        }
+        else
+        {
+            Console.WriteLine("😔╔═══════════════════════════════════════╗😔");
+            Console.WriteLine("  ║            GAME OVER                  ║  ");
+            Console.WriteLine("  ║        No More Valid Moves            ║  ");
+            Console.WriteLine("  ╚═══════════════════════════════════════╝  ");
+            Console.WriteLine();
+            Console.WriteLine("🎯 Don't give up! Elevens requires patience and strategy.");
+            Console.WriteLine("💡 Try using HINT command next time for guidance.");
+            Console.WriteLine("📈 Each game makes you a better player!");
+        }
+        
+        Console.WriteLine($"\n{gameManager.GetDetailedStats()}");
+    }
+    
+    static bool AskPlayAgain()
+    {
+        Console.WriteLine("\n🔄 PLAY AGAIN OPTIONS:");
+        Console.WriteLine("   Y: Start new game");
+        Console.WriteLine("   N: Exit to desktop");
+        Console.WriteLine("   STATS: View detailed statistics");
+        
+        while (true)
+        {
+            Console.Write("\nYour choice: ");
+            string input = Console.ReadLine()?.ToUpper().Trim();
+            
+            switch (input)
+            {
+                case "Y":
+                case "YES":
+                    return true;
+                    
+                case "N":
+                case "NO":
+                    return false;
+                    
+                case "STATS":
+                    Console.Clear();
+                    Console.WriteLine(gameManager.GetDetailedStats());
+                    Console.WriteLine("\nPress any key to continue...");
+                    Console.ReadKey();
+                    Console.WriteLine("\n🔄 PLAY AGAIN OPTIONS:");
+                    Console.WriteLine("   Y: Start new game");
+                    Console.WriteLine("   N: Exit to desktop");
+                    break;
+                    
+                default:
+                    Console.WriteLine("Please enter Y, N, or STATS");
+                    break;
+            }
+        }
+    }
+    
+    static void ShowFarewellScreen()
+    {
+        Console.Clear();
+        Console.WriteLine("╔════════════════════════════════════════╗");
+        Console.WriteLine("║     Thank You for Playing Elevens!    ║");
+        Console.WriteLine("╠════════════════════════════════════════╣");
+        Console.WriteLine("║  🎮 Game developed for CSC 350H       ║");
+        Console.WriteLine("║  🎓 Object-Oriented Programming        ║");
+        Console.WriteLine("║  📚 From Design to Implementation      ║");
+        Console.WriteLine("║                                        ║");
+        Console.WriteLine("║  Features Demonstrated:                ║");
+        Console.WriteLine("║  ✅ Inheritance & Polymorphism         ║");
+        Console.WriteLine("║  ✅ Encapsulation & Abstraction        ║");
+        Console.WriteLine("║  ✅ File I/O & Serialization           ║");
+        Console.WriteLine("║  ✅ Algorithm Implementation           ║");
+        Console.WriteLine("║  ✅ User Interface Design              ║");
+        Console.WriteLine("║  ✅ Error Handling & Validation        ║");
+        Console.WriteLine("╚════════════════════════════════════════╝");
+        Console.WriteLine("\n🌟 May your coding journey continue to flourish!");
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
     }
     
-    /// <summary>
-    /// Shows detailed help and rules
-    /// </summary>
     static void ShowDetailedHelp()
     {
         Console.Clear();
-        Console.WriteLine("📖 ELEVENS SOLITAIRE - DETAILED HELP");
-        Console.WriteLine("=====================================");
+        Console.WriteLine("📖 ELEVENS SOLITAIRE - COMPREHENSIVE GUIDE");
+        Console.WriteLine("==========================================");
         
         Console.WriteLine("\n🎯 OBJECTIVE:");
-        Console.WriteLine("   Remove all 52 cards from the deck by making valid selections");
+        Console.WriteLine("   Remove all 52 cards by making valid selections");
         
-        Console.WriteLine("\n📏 RULES:");
-        Console.WriteLine("   1. Select exactly 2 cards that add up to 11:");
-        Console.WriteLine("      • Ace = 1 point");
-        Console.WriteLine("      • Number cards = face value (2-10)");
+        Console.WriteLine("\n📏 GAME RULES:");
+        Console.WriteLine("   1. Select 2 cards that sum to 11:");
+        Console.WriteLine("      • Ace = 1, Cards 2-10 = face value");
         Console.WriteLine("      • Jack = 11, Queen = 12, King = 13");
-        Console.WriteLine("      • Examples: Ace + 10, 2 + 9, 5 + 6");
+        Console.WriteLine("      • Examples: A+10, 2+9, 5+6, 3+8");
         
-        Console.WriteLine("\n   2. OR select exactly 3 cards: Jack, Queen, King");
-        Console.WriteLine("      • Suits don't matter");
-        Console.WriteLine("      • Must have one of each: J, Q, K");
+        Console.WriteLine("\n   2. OR select 3 cards: Jack + Queen + King");
+        Console.WriteLine("      • Any suits (♠♥♦♣) - suits don't matter");
+        Console.WriteLine("      • Must be exactly one J, one Q, one K");
         
-        Console.WriteLine("\n🎮 HOW TO PLAY:");
-        Console.WriteLine("   1. Type a number (0-8) to select/deselect cards");
-        Console.WriteLine("   2. Selected cards appear in [brackets]");
-        Console.WriteLine("   3. Type 'P' to process your selection");
-        Console.WriteLine("   4. Valid selections are removed and replaced");
-        Console.WriteLine("   5. Continue until all cards are gone (WIN!)");
-        Console.WriteLine("   6. If no moves are possible, you lose");
+        Console.WriteLine("\n🎮 ADVANCED COMMANDS:");
+        Console.WriteLine("   HINT    - Get intelligent move suggestions");
+        Console.WriteLine("   UNDO    - Undo your last move");
+        Console.WriteLine("   SAVE    - Save game to continue later");
+        Console.WriteLine("   STATS   - View detailed performance metrics");
         
-        Console.WriteLine("\n💡 STRATEGY TIPS:");
-        Console.WriteLine("   • Look for pairs first (easier to spot)");
-        Console.WriteLine("   • Save J-Q-K combinations for when needed");
-        Console.WriteLine("   • Plan ahead - some moves may block others");
-        Console.WriteLine("   • Use 'C' to clear selection if you change your mind");
+        Console.WriteLine("\n💡 WINNING STRATEGIES:");
+        Console.WriteLine("   • Scan for easy pairs first (A+10, 2+9, etc.)");
+        Console.WriteLine("   • Use J-Q-K when pairs become scarce");
+        Console.WriteLine("   • Plan moves - some choices may block future options");
+        Console.WriteLine("   • Use HINT when stuck - it analyzes the best moves");
+        Console.WriteLine("   • Don't be afraid to UNDO and try different approaches");
         
-        Console.WriteLine("\n🎲 WINNING ODDS:");
-        Console.WriteLine("   • Elevens has roughly 1 in 9 chance of winning");
-        Console.WriteLine("   • Don't get discouraged - it's meant to be challenging!");
+        Console.WriteLine("\n📊 DIFFICULTY & ODDS:");
+        Console.WriteLine("   • Elevens has ~11% win rate for random play");
+        Console.WriteLine("   • Strategic play can improve odds significantly");
+        Console.WriteLine("   • Average game length: 15-25 moves");
         
-        Console.WriteLine("\nPress any key to return to game...");
+        Console.WriteLine("\n🏆 MASTERY TIPS:");
+        Console.WriteLine("   • Track your statistics to see improvement");
+        Console.WriteLine("   • Aim for win streaks to build consistency");
+        Console.WriteLine("   • Learn to recognize losing positions early");
+        Console.WriteLine("   • Practice pattern recognition for faster play");
+        
+        PauseForInput();
+    }
+    
+    static void PauseForInput()
+    {
+        Console.WriteLine("\nPress any key to continue...");
         Console.ReadKey();
     }
 }

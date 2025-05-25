@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Elevens-Project")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8647acc54ec8780e4fdef688f1165e08bdc63665")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f7f41b4b53b0efc45633d8254db00e5bfbad1da")]
 [assembly: System.Reflection.AssemblyProductAttribute("Elevens-Project")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Elevens-Project")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
