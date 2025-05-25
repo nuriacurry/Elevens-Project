@@ -2,150 +2,171 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// Demo program for testing the Elevens solitaire game implementation
-/// Shows partial implementation with basic game mechanics
+/// Interactive Elevens Solitaire Game
+/// Complete implementation with user interface and gameplay loop
 /// </summary>
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("=== ELEVENS SOLITAIRE GAME - PARTIAL IMPLEMENTATION ===\n");
-
-        // Test 1: Card and Enum Testing
-        Console.WriteLine("🧪 TEST 1: Card and Enum Functionality");
-        Console.WriteLine("======================================");
+        Console.WriteLine("🎴 WELCOME TO ELEVENS SOLITAIRE! 🎴");
+        Console.WriteLine("===================================");
         
-        Card aceSpades = new Card(Rank.Ace, Suit.Spades);
-        Card tenHearts = new Card(Rank.Ten, Suit.Hearts);
-        Card jackClubs = new Card(Rank.Jack, Suit.Clubs);
+        ElevensGame game = new ElevensGame();
+        bool playAgain = true;
         
-        Console.WriteLine($"Created cards:");
-        Console.WriteLine($"  {aceSpades} (Point Value: {aceSpades.PointValue()})");
-        Console.WriteLine($"  {tenHearts} (Point Value: {tenHearts.PointValue()})");
-        Console.WriteLine($"  {jackClubs} (Point Value: {jackClubs.PointValue()})");
+        while (playAgain)
+        {
+            // Start new game
+            game.StartNewGame();
+            
+            // Main game loop
+            while (!game.IsGameOver())
+            {
+                Console.Clear();
+                game.DisplayBoard();
+                
+                Console.WriteLine("\n🎮 GAME COMMANDS:");
+                Console.WriteLine("   0-8: Select/deselect card at position");
+                Console.WriteLine("   P: Process move with selected cards");
+                Console.WriteLine("   C: Clear selection");
+                Console.WriteLine("   H: Show detailed help");
+                Console.WriteLine("   Q: Quit current game");
+                Console.Write("\nEnter command: ");
+                
+                string input = Console.ReadLine()?.ToUpper().Trim();
+                
+                if (string.IsNullOrEmpty(input))
+                {
+                    continue;
+                }
+                
+                switch (input)
+                {
+                    case "0": case "1": case "2": case "3": case "4":
+                    case "5": case "6": case "7": case "8":
+                        if (int.TryParse(input, out int position))
+                        {
+                            game.ToggleCardSelection(position);
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
+                        break;
+                        
+                    case "P":
+                        bool validMove = game.ProcessMove();
+                        if (validMove)
+                        {
+                            Console.WriteLine("✨ Cards replaced! Press any key to continue...");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Press any key to try again...");
+                        }
+                        Console.ReadKey();
+                        break;
+                        
+                    case "C":
+                        game.ClearSelection();
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
+                        break;
+                        
+                    case "H":
+                        ShowDetailedHelp();
+                        break;
+                        
+                    case "Q":
+                        Console.WriteLine("❌ Game ended by player");
+                        goto GameEnd;
+                        
+                    default:
+                        Console.WriteLine("❌ Invalid command! Press any key to continue...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            
+            GameEnd:
+            // Game over - show results
+            Console.Clear();
+            if (game.HasWon())
+            {
+                Console.WriteLine("🎉 CONGRATULATIONS! YOU WON! 🎉");
+                Console.WriteLine("===============================");
+                Console.WriteLine("You successfully removed all cards!");
+                
+                // Victory animation
+                for (int i = 0; i < 3; i++)
+                {
+                    Console.Write("🎊 ");
+                    System.Threading.Thread.Sleep(500);
+                }
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("😔 GAME OVER - NO MORE MOVES");
+                Console.WriteLine("============================");
+                Console.WriteLine("Better luck next time!");
+            }
+            
+            // Show statistics
+            Console.WriteLine($"\n{game.GetGameStats()}");
+            
+            // Ask to play again
+            Console.WriteLine("\n🔄 Would you like to play again? (Y/N)");
+            string playAgainInput = Console.ReadLine()?.ToUpper().Trim();
+            playAgain = playAgainInput == "Y" || playAgainInput == "YES";
+        }
         
-        // Test card flipping
-        aceSpades.FlipCard();
-        Console.WriteLine($"  After flipping: {aceSpades}");
-        Console.WriteLine();
-
-        // Test 2: Deck Functionality
-        Console.WriteLine("🧪 TEST 2: Deck Creation and Shuffling");
+        Console.WriteLine("\n👋 Thanks for playing Elevens Solitaire!");
+        Console.WriteLine("Press any key to exit...");
+        Console.ReadKey();
+    }
+    
+    /// <summary>
+    /// Shows detailed help and rules
+    /// </summary>
+    static void ShowDetailedHelp()
+    {
+        Console.Clear();
+        Console.WriteLine("📖 ELEVENS SOLITAIRE - DETAILED HELP");
         Console.WriteLine("=====================================");
         
-        Deck testDeck = new Deck();
-        Console.WriteLine($"New deck created: {testDeck}");
+        Console.WriteLine("\n🎯 OBJECTIVE:");
+        Console.WriteLine("   Remove all 52 cards from the deck by making valid selections");
         
-        testDeck.Shuffle();
-        Console.WriteLine("Deck shuffled successfully");
+        Console.WriteLine("\n📏 RULES:");
+        Console.WriteLine("   1. Select exactly 2 cards that add up to 11:");
+        Console.WriteLine("      • Ace = 1 point");
+        Console.WriteLine("      • Number cards = face value (2-10)");
+        Console.WriteLine("      • Jack = 11, Queen = 12, King = 13");
+        Console.WriteLine("      • Examples: Ace + 10, 2 + 9, 5 + 6");
         
-        Console.WriteLine("Dealing 5 cards:");
-        for (int i = 0; i < 5; i++)
-        {
-            Card dealt = testDeck.DealCard();
-            if (dealt != null)
-            {
-                Console.WriteLine($"  Card {i + 1}: {dealt} (Points: {dealt.PointValue()})");
-            }
-        }
-        Console.WriteLine($"Cards remaining in deck: {testDeck.Size()}\n");
-
-        // Test 3: ElevensBoard Game Logic
-        Console.WriteLine("🧪 TEST 3: Elevens Board Game Logic");
-        Console.WriteLine("==================================");
+        Console.WriteLine("\n   2. OR select exactly 3 cards: Jack, Queen, King");
+        Console.WriteLine("      • Suits don't matter");
+        Console.WriteLine("      • Must have one of each: J, Q, K");
         
-        ElevensBoard gameBoard = new ElevensBoard();
-        gameBoard.NewGame();
+        Console.WriteLine("\n🎮 HOW TO PLAY:");
+        Console.WriteLine("   1. Type a number (0-8) to select/deselect cards");
+        Console.WriteLine("   2. Selected cards appear in [brackets]");
+        Console.WriteLine("   3. Type 'P' to process your selection");
+        Console.WriteLine("   4. Valid selections are removed and replaced");
+        Console.WriteLine("   5. Continue until all cards are gone (WIN!)");
+        Console.WriteLine("   6. If no moves are possible, you lose");
         
-        Console.WriteLine(gameBoard.BoardDisplay());
+        Console.WriteLine("\n💡 STRATEGY TIPS:");
+        Console.WriteLine("   • Look for pairs first (easier to spot)");
+        Console.WriteLine("   • Save J-Q-K combinations for when needed");
+        Console.WriteLine("   • Plan ahead - some moves may block others");
+        Console.WriteLine("   • Use 'C' to clear selection if you change your mind");
         
-        // Test finding valid pairs
-        var pairs = gameBoard.FindPairSum11();
-        Console.WriteLine($"Found {pairs.Count} pairs that sum to 11:");
-        foreach (var pair in pairs)
-        {
-            Card card1 = gameBoard.CardAt(pair[0]);
-            Card card2 = gameBoard.CardAt(pair[1]);
-            Console.WriteLine($"  Position {pair[0]} ({card1.GetRank()}) + Position {pair[1]} ({card2.GetRank()}) = {card1.PointValue() + card2.PointValue()}");
-        }
+        Console.WriteLine("\n🎲 WINNING ODDS:");
+        Console.WriteLine("   • Elevens has roughly 1 in 9 chance of winning");
+        Console.WriteLine("   • Don't get discouraged - it's meant to be challenging!");
         
-        // Test finding J-Q-K combinations
-        var jqkSets = gameBoard.FindJQK();
-        Console.WriteLine($"\nFound {jqkSets.Count} J-Q-K combinations:");
-        foreach (var triplet in jqkSets)
-        {
-            Console.WriteLine($"  Positions {triplet[0]}, {triplet[1]}, {triplet[2]}:");
-            foreach (int pos in triplet)
-            {
-                Card card = gameBoard.CardAt(pos);
-                Console.WriteLine($"    Position {pos}: {card.GetRank()} of {card.GetSuit()}");
-            }
-        }
-        
-        // Test 4: Game Rule Validation
-        Console.WriteLine("\n🧪 TEST 4: Game Rule Validation");
-        Console.WriteLine("==============================");
-        
-        // Test pair validation
-        if (pairs.Count > 0)
-        {
-            List<int> firstPair = pairs[0];
-            bool isLegalPair = gameBoard.IsLegal(firstPair);
-            Console.WriteLine($"Testing pair at positions {firstPair[0]} and {firstPair[1]}: {(isLegalPair ? "VALID" : "INVALID")}");
-        }
-        
-        // Test J-Q-K validation
-        if (jqkSets.Count > 0)
-        {
-            List<int> firstJQK = jqkSets[0];
-            bool isLegalJQK = gameBoard.IsLegal(firstJQK);
-            Console.WriteLine($"Testing J-Q-K at positions {string.Join(", ", firstJQK)}: {(isLegalJQK ? "VALID" : "INVALID")}");
-        }
-        
-        // Test invalid selection
-        List<int> invalidSelection = new List<int> { 0 }; // Single card
-        bool isInvalid = gameBoard.IsLegal(invalidSelection);
-        Console.WriteLine($"Testing single card selection: {(isInvalid ? "VALID" : "INVALID")}");
-        
-        // Test 5: Game State Checking
-        Console.WriteLine("\n🧪 TEST 5: Game State Analysis");
-        Console.WriteLine("=============================");
-        
-        bool canContinue = gameBoard.AnotherPlayIsPossible();
-        bool hasWon = gameBoard.GameIsWon();
-        
-        Console.WriteLine($"Can continue playing: {canContinue}");
-        Console.WriteLine($"Game is won: {hasWon}");
-        Console.WriteLine($"Board is empty: {gameBoard.IsEmpty()}");
-        
-        // Test 6: Card Replacement Demo
-        Console.WriteLine("\n🧪 TEST 6: Card Replacement Demo");
-        Console.WriteLine("===============================");
-        
-        if (pairs.Count > 0)
-        {
-            List<int> testPair = pairs[0];
-            Console.WriteLine($"Before replacement:");
-            Console.WriteLine($"  Position {testPair[0]}: {gameBoard.CardAt(testPair[0])}");
-            Console.WriteLine($"  Position {testPair[1]}: {gameBoard.CardAt(testPair[1])}");
-            
-            gameBoard.ReplaceSelected(testPair);
-            
-            Console.WriteLine($"\nAfter replacement:");
-            Console.WriteLine($"  Position {testPair[0]}: {gameBoard.CardAt(testPair[0])}");
-            Console.WriteLine($"  Position {testPair[1]}: {gameBoard.CardAt(testPair[1])}");
-        }
-        
-        Console.WriteLine("\n=== PARTIAL IMPLEMENTATION TESTING COMPLETE ===");
-        Console.WriteLine("✅ Card class: Implemented and tested");
-        Console.WriteLine("✅ Deck class: Implemented and tested");
-        Console.WriteLine("✅ Abstract Board class: Implemented with common functionality");
-        Console.WriteLine("✅ ElevensBoard class: Implemented with game-specific logic");
-        Console.WriteLine("✅ Game rule validation: Working correctly");
-        Console.WriteLine("✅ Card replacement: Functional");
-        Console.WriteLine("\n📋 READY FOR: Game controller implementation, user interface, complete gameplay loop");
-        
-        Console.WriteLine("\nPress any key to exit...");
+        Console.WriteLine("\nPress any key to return to game...");
         Console.ReadKey();
     }
 }
